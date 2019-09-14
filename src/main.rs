@@ -24,6 +24,7 @@ fn main() {
 
     let mut init_games: HashSet<usize> = HashSet::new();
     let mut graph: Vec<Vec<Game>> = vec![Vec::with_capacity(m); m];
+    let mut graph2: Vec<Vec<usize>> = vec![Vec::with_capacity(m); m];
     let mut input: Vec<i32> = vec![0;m];
     for i in 0..n {
         let row = read_vec::<usize>();
@@ -35,6 +36,7 @@ fn main() {
         for j in 1..row.len() {
             let g = get_game(n, i, row[j]);
             graph[g_prev.2].push(g);
+            graph2[g_prev.2].push(g.2);
             input[g.2] += 1;
             g_prev = g;
         }
@@ -42,7 +44,7 @@ fn main() {
 
     //println!("IIIIIII {:?}", input);
 
-    let d = solve(m, &graph,&init_games, &input);
+    let d = solve(m, &graph2, &graph,&init_games, &input);
  
     println!("{}", d);
 }
@@ -59,11 +61,11 @@ fn get_game(n: usize, i: usize, j: usize) -> Game {
 }
 
 
-fn solve(m: usize, graph: &[Vec<Game>], init_games: &HashSet<usize>, input: &[i32],) -> i32 {
+fn solve(m: usize, graph2: &[Vec<usize>], graph: &[Vec<Game>], init_games: &HashSet<usize>, input: &[i32],) -> i32 {
     //println!("XXX 000 {}, {}", n, m);
     // Only games without input can be start points.
     let ig3 = init_games.iter().cloned().filter(|v|input[*v] == 0).collect::<Vec<_>>();
-    let lpd = dfs(m, graph, &ig3);
+    let lpd = dfs(m, graph2, graph, &ig3);
 
     // Num of days = lpd + 1
     let days = if lpd >= 0 {
@@ -79,7 +81,7 @@ fn solve(m: usize, graph: &[Vec<Game>], init_games: &HashSet<usize>, input: &[i3
  * Calculate the length of the longest path by DFS.
  * Returns -1 if it contains the cycle.
  */
-fn dfs(m: usize, graph: &[Vec<Game>], initial_games: &[usize]) -> i32 {
+fn dfs(m: usize, graph2: &[Vec<usize>], graph: &[Vec<Game>], initial_games: &[usize]) -> i32 {
     let mut visited: Vec<bool> = vec![false; m];
     let mut finished: Vec<bool> = vec![false; m];
 
@@ -94,8 +96,8 @@ fn dfs(m: usize, graph: &[Vec<Game>], initial_games: &[usize]) -> i32 {
         if iat.1 {
             finished[iat.0] = true;
 
-            if graph[iat.0].len() > 0 {
-                lpd[iat.0] = graph[iat.0].iter().map(|v|lpd[v.2]).max().unwrap() + 1;
+            if graph2[iat.0].len() > 0 {
+                lpd[iat.0] = graph2[iat.0].iter().map(|v|lpd[*v]).max().unwrap() + 1;
             }
 
             continue;
@@ -119,8 +121,8 @@ fn dfs(m: usize, graph: &[Vec<Game>], initial_games: &[usize]) -> i32 {
         visited[iat.0] = true;
         
         // B-3 Some children
-        for next in &graph[iat.0] {
-            stack.push((next.2, false));
+        for next in &graph2[iat.0] {
+            stack.push((*next, false));
         }
     }
     return initial_games.iter().map(|g| lpd[*g]).max().unwrap();

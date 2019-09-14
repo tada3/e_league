@@ -81,6 +81,7 @@ fn solve(m: usize, graph2: &[Vec<usize>], init_games: &HashSet<usize>, input: &[
  * Returns -1 if it contains the cycle.
  */
 fn dfs(m: usize, graph: &[Vec<usize>], init_games: &[usize]) -> i32 {
+    // println!("dfs000 init={:?}", init_games);
     let mut visited: Vec<bool> = vec![false; m];
     let mut finished: Vec<bool> = vec![false; m];
 
@@ -93,6 +94,8 @@ fn dfs(m: usize, graph: &[Vec<usize>], init_games: &[usize]) -> i32 {
     
     while !stack.is_empty() {
         let entry = stack.pop().unwrap();
+
+        // println!("L000 entry={:?}", entry);
         
         // A. Fin entry
         if entry.1 {
@@ -127,5 +130,5 @@ fn dfs(m: usize, graph: &[Vec<usize>], init_games: &[usize]) -> i32 {
             stack.push((*next, false));
         }
     }
-    return init_games.iter().map(|g| lpd[*g]).max().unwrap();
+    return init_games.iter().map(|g| lpd[*g]).max().unwrap_or(-1);
 }
